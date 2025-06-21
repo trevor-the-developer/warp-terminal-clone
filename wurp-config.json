@@ -1,0 +1,93 @@
+{
+  "project": {
+    "name": "wurp-terminal",
+    "binary_name": "wurp-terminal",
+    "target_framework": "net8.0",
+    "runtime": "linux-x64"
+  },
+  "paths": {
+    "build_dir": "bin/Release/net8.0",
+    "publish_dir": "bin/Release/net8.0/publish",
+    "user_bin": "$HOME/.local/bin",
+    "desktop_dir": "$HOME/.local/share/applications"
+  },
+  "dependencies": {
+    "required": [
+      {
+        "name": "dotnet",
+        "command": "dotnet",
+        "version_check": "dotnet --version",
+        "min_version": "8.0",
+        "install_hint": "Install .NET 8 SDK from Microsoft"
+      },
+      {
+        "name": "curl",
+        "command": "curl",
+        "install_hint": "sudo apt install curl"
+      },
+      {
+        "name": "jq",
+        "command": "jq",
+        "install_hint": "sudo apt install jq"
+      }
+    ],
+    "optional": [
+      {
+        "name": "git",
+        "command": "git",
+        "install_hint": "sudo apt install git"
+      }
+    ]
+  },
+  "shell_integration": {
+    "marker": "# Warp Terminal Integration",
+    "bashrc_path": "$HOME/.bashrc",
+    "aliases": [
+      "alias wt='wurp-terminal'",
+      "alias wurp='wurp-terminal'"
+    ],
+    "functions": [
+      "warp_explain",
+      "warp_suggest",
+      "warp_debug"
+    ],
+    "quick_aliases": [
+      "alias explain='warp_explain'",
+      "alias suggest='warp_suggest'",
+      "alias debug='warp_debug'"
+    ]
+  },
+  "services": {
+    "freelance_ai": {
+      "health_url": "http://localhost:5000/health",
+      "api_base": "http://localhost:5000/api",
+      "start_hint": "cd /path/to/freelance-ai && dotnet run --project src/FreelanceAI.WebApi"
+    },
+    "ollama": {
+      "health_url": "http://localhost:11434/api/tags",
+      "models_limit": 3
+    }
+  },
+  "build": {
+    "clean_dirs": ["bin", "obj"],
+    "dotnet_args": {
+      "build": "-c Release",
+      "publish": "-c Release -r linux-x64 --self-contained false"
+    }
+  },
+  "colors": {
+    "red": "\\033[0;31m",
+    "green": "\\033[0;32m",
+    "yellow": "\\033[1;33m",
+    "blue": "\\033[0;34m",
+    "cyan": "\\033[0;36m",
+    "nc": "\\033[0m"
+  },
+  "desktop_entry": {
+    "name": "Warp Terminal Clone",
+    "comment": "AI-Powered Terminal built with .NET",
+    "icon": "utilities-terminal",
+    "categories": "System;TerminalEmulator;",
+    "keywords": "terminal;console;command;shell;ai;"
+  }
+}

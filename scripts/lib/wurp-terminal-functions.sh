@@ -1,6 +1,6 @@
 #!/bin/bash
-# lib/warp-terminal-functions.sh
-# Function library for Warp Terminal Clone
+# lib/wurp-terminal-functions.sh
+# Function library for Wurp (Warp Terminal Clone)
 
 # ========================================
 # UTILITY FUNCTIONS
@@ -133,7 +133,7 @@ publish_app() {
     cd "$PROJECT_ROOT" || return 1
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     # Publish (let .NET use its default structure)
     local publish_args="-c Release --self-contained false"
@@ -216,7 +216,7 @@ install_shell_integration() {
     local rc_file=$(expand_path "${rc_file_path:-$HOME/.bashrc}")
     
     local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Warp Terminal Integration}"
+    marker="${marker:-# Wurp Terminal Integration}"
     
     if grep -q "$marker" "$rc_file" 2>/dev/null; then
         print_status "info" "Shell integration already installed"
@@ -224,7 +224,7 @@ install_shell_integration() {
     fi
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     # Build integration block
     local integration_block=""
@@ -235,9 +235,9 @@ install_shell_integration() {
     done < <(echo "$CONFIG" | jq -r '.shell_integration.aliases[]? // empty')
     
     integration_block+="\n# AI helper functions\n"
-    integration_block+="warp_explain() { $binary_name ai explain \"\$*\"; }\n"
-    integration_block+="warp_suggest() { $binary_name ai suggest \"\$*\"; }\n"
-    integration_block+="warp_debug() { $binary_name ai debug \"\$*\"; }\n\n"
+    integration_block+="wurp_explain() { $binary_name ai explain \"\$*\"; }\n"
+    integration_block+="wurp_suggest() { $binary_name ai suggest \"\$*\"; }\n"
+    integration_block+="wurp_debug() { $binary_name ai debug \"\$*\"; }\n\n"
     
     while IFS= read -r alias_line; do
         [ -n "$alias_line" ] && integration_block+="$alias_line\n"
@@ -292,7 +292,7 @@ create_desktop_entry() {
     local desktop_dir=$(expand_path "${desktop_dir_path:-$HOME/.local/share/applications}")
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     local desktop_file="$desktop_dir/$binary_name.desktop"
     
@@ -302,7 +302,7 @@ create_desktop_entry() {
     mkdir -p "$desktop_dir"
     
     local entry_name=$(get_config '.desktop_entry.name')
-    entry_name="${entry_name:-Warp Terminal Clone}"
+    entry_name="${entry_name:-Wurp (Warp Terminal Clone)}"
     
     local entry_comment=$(get_config '.desktop_entry.comment')
     entry_comment="${entry_comment:-AI-Powered Terminal built with .NET}"
@@ -339,13 +339,13 @@ DESKTOP_EOF
 
 show_status() {
     local project_name=$(get_config '.project.name')
-    project_name="${project_name:-Warp Terminal Clone}"
+    project_name="${project_name:-Wurp (Warp Terminal Clone)}"
     
     print_color "cyan" "🚀 $project_name Status"
     echo ""
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     # Use same search logic as publish_app
     local actual_binary=""
@@ -383,7 +383,7 @@ show_status() {
     
     # Check shell integration
     local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Warp Terminal Integration}"
+    marker="${marker:-# Wurp Terminal Integration}"
     
     local current_shell=$(detect_current_shell)
     local rc_file_path=$(get_shell_config "$current_shell" "rc_file")
@@ -407,7 +407,7 @@ show_status() {
 
 run_app() {
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     # Use same search logic as publish_app
     local actual_binary=""
@@ -444,12 +444,12 @@ run_app() {
 
 uninstall() {
     local project_name=$(get_config '.project.name')
-    project_name="${project_name:-Warp Terminal Clone}"
+    project_name="${project_name:-Wurp (Warp Terminal Clone)}"
     
     print_status "working" "Uninstalling $project_name..."
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     local user_bin_path=$(get_config '.paths.user_bin')
     local user_bin=$(expand_path "${user_bin_path:-$HOME/.local/bin}")
@@ -458,7 +458,7 @@ uninstall() {
     local desktop_dir=$(expand_path "${desktop_dir_path:-$HOME/.local/share/applications}")
     
     local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Warp Terminal Integration}"
+    marker="${marker:-# Wurp Terminal Integration}"
     
     # Remove symlink
     if [ -L "$user_bin/$binary_name" ]; then
@@ -479,10 +479,10 @@ uninstall() {
     local rc_file=$(expand_path "$rc_file_path")
     
     if [ -f "$rc_file" ] && grep -q "$marker" "$rc_file" 2>/dev/null; then
-        cp "$rc_file" "$rc_file.warp.bak"
+        cp "$rc_file" "$rc_file.wurp.bak"
         sed -i "/$marker/,/^$/d" "$rc_file"
         print_status "success" "Shell integration removed"
-        print_color "cyan" "Backup created: $rc_file.warp.bak"
+        print_color "cyan" "Backup created: $rc_file.wurp.bak"
     fi
     
     # Clean build artifacts
@@ -503,10 +503,10 @@ uninstall() {
 
 show_help() {
     local project_name=$(get_config '.project.name')
-    project_name="${project_name:-Warp Terminal Clone}"
+    project_name="${project_name:-Wurp (Warp Terminal Clone)}"
     
     local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-warp-terminal}"
+    binary_name="${binary_name:-wurp-terminal}"
     
     print_color "cyan" "$project_name - Build & Installation Script"
     echo ""

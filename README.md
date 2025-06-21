@@ -1,4 +1,4 @@
-# 🚀 Warp Terminal Clone
+# 🚀 Warp Terminal Clone (Wurp Terminal)
 
 A feature-rich terminal emulator built with .NET 8, featuring AI integration, command history, auto-completion, and themes.
 
@@ -6,13 +6,13 @@ A feature-rich terminal emulator built with .NET 8, featuring AI integration, co
 
 ```bash
 # Check dependencies
-./scripts/warp-terminal check
+./scripts/wurp-terminal check
 
 # Install everything
-./scripts/warp-terminal install
+./scripts/wurp-terminal install
 
 # Run the terminal
-warp-terminal
+wurp-terminal
 ```
 
 ## Features
@@ -20,7 +20,7 @@ warp-terminal
 - 🤖 AI Integration (FreelanceAI compatible)
 - 📜 Command History
 - ⚡ Auto-completion
-- 🎨 Multiple themes (default, dark, warp)
+- 🎨 Multiple themes (default, dark, wurp)
 - 🐚 Multi-shell support (bash/zsh)
 - ⚙️ JSON configuration
 - 🔧 Modular architecture
@@ -34,7 +34,7 @@ ai suggest "deploy app"
 ai debug "permission denied"
 
 # Built-in commands
-theme warp
+theme wurp
 clear
 history
 help
@@ -43,8 +43,8 @@ help
 ## Project Structure
 
 - `Program.cs` - Main terminal application
-- `warp-config.json` - Centralized configuration
-- `scripts/warp-terminal` - Installation script
-- `scripts/lib/warp-terminal-functions.sh` - Function library
+- `wurp-config.json` - Centralized configuration
+- `scripts/wurp-terminal` - Installation script
+- `scripts/lib/wurp-terminal-functions.sh` - Function library
 
 Built with ❤️ using .NET 8
