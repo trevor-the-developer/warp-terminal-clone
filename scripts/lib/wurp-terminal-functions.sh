@@ -1,14 +1,86 @@
 #!/bin/bash
 # lib/wurp-terminal-functions.sh
-# Function library for Wurp (Warp Terminal Clone)
+# Modular function library for Wurp (Warp Terminal Clone)
 
 # ========================================
-# UTILITY FUNCTIONS
+# MODULE LOADING SYSTEM
 # ========================================
 
+# Get the directory of this script
+FUNCTIONS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULES_DIR="$FUNCTIONS_DIR/modules"
+
+# Debug function (available immediately)
+debug_print() {
+    if [[ "${DEBUG:-}" == "true" || "${DEBUG:-}" == "1" ]]; then
+        echo "DEBUG: $*" >&2
+    fi
+}
+
+# Initialize module loading
+init_module_system() {
+    debug_print "Initializing module system..."
+    debug_print "Functions dir: $FUNCTIONS_DIR"
+    debug_print "Modules dir: $MODULES_DIR"
+
+    # Check if modules directory exists
+    if [ ! -d "$MODULES_DIR" ]; then
+        echo "⚠️ Modules directory not found: $MODULES_DIR"
+        echo "Using legacy mode..."
+        return 1
+    fi
+
+    return 0
+}
+
+# Load all modules in numerical order
+load_modules() {
+    debug_print "Loading modules from: $MODULES_DIR"
+
+    local loaded_count=0
+    local failed_modules=()
+
+    # Source all modules in order (00-*, 10-*, etc.)
+    for module in "$MODULES_DIR"/*.sh; do
+        if [ -f "$module" ]; then
+            local module_name=$(basename "$module")
+            debug_print "Loading module: $module_name"
+
+            if source "$module"; then
+                debug_print "✅ Successfully loaded: $module_name"
+                ((loaded_count++))
+            else
+                echo "❌ Failed to load module: $module_name"
+                failed_modules+=("$module_name")
+            fi
+        fi
+    done
+
+    debug_print "Loaded $loaded_count modules successfully"
+
+    if [ ${#failed_modules[@]} -gt 0 ]; then
+        echo "❌ Failed to load modules: ${failed_modules[*]}"
+        return 1
+    fi
+
+    print_status "success" "Modular system loaded successfully"
+    return 0
+}
+
+# ========================================
+# LEGACY COMPATIBILITY FUNCTIONS
+# ========================================
+# These provide basic functionality when modules aren't available
+
+# Basic config functions
 get_config() {
     local path=$1
     echo "$CONFIG" | jq -r "$path // empty" 2>/dev/null
+}
+
+get_config_array() {
+    local path=$1
+    echo "$CONFIG" | jq -r "$path[]? // empty" 2>/dev/null
 }
 
 expand_path() {
@@ -16,23 +88,18 @@ expand_path() {
     echo "${path/\$HOME/$HOME}"
 }
 
+# Basic output functions
 print_color() {
     local color_name=$1
     local message=$2
-    local color_code=$(get_config ".colors.$color_name")
-    local nc=$(get_config ".colors.nc")
-    
     case $color_name in
-        "red") color_code="${color_code:-\033[0;31m}" ;;
-        "green") color_code="${color_code:-\033[0;32m}" ;;
-        "yellow") color_code="${color_code:-\033[1;33m}" ;;
-        "blue") color_code="${color_code:-\033[0;34m}" ;;
-        "cyan") color_code="${color_code:-\033[0;36m}" ;;
-        *) color_code="" ;;
+        "red") echo -e "\033[0;31m${message}\033[0m" ;;
+        "green") echo -e "\033[0;32m${message}\033[0m" ;;
+        "yellow") echo -e "\033[1;33m${message}\033[0m" ;;
+        "blue") echo -e "\033[0;34m${message}\033[0m" ;;
+        "cyan") echo -e "\033[0;36m${message}\033[0m" ;;
+        *) echo "$message" ;;
     esac
-    nc="${nc:-\033[0m}"
-    
-    echo -e "${color_code}${message}${nc}"
 }
 
 print_status() {
@@ -44,43 +111,25 @@ print_status() {
         "warning") print_color "yellow" "⚠️  $message" ;;
         "info") print_color "cyan" "ℹ️  $message" ;;
         "working") print_color "yellow" "🔨 $message" ;;
+        "folder") print_color "blue" "📁 $message" ;;
+        "file") print_color "green" "📝 $message" ;;
+        "computer") print_color "cyan" "💻 $message" ;;
+        "gear") print_color "yellow" "⚙️ $message" ;;
+        "wrench") print_color "yellow" "🔧 $message" ;;
+        "book") print_color "blue" "📖 $message" ;;
+        "rocket") print_color "cyan" "🚀 $message" ;;
+        "party") print_color "green" "🎉 $message" ;;
+        "target") print_color "cyan" "🎯 $message" ;;
         *) echo "$message" ;;
     esac
 }
 
-# ========================================
-# SHELL DETECTION FUNCTIONS
-# ========================================
-
-detect_current_shell() {
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        echo "zsh"
-    elif [[ "$SHELL" == *"bash"* ]]; then
-        echo "bash"
-    elif [ -n "${ZSH_VERSION:-}" ]; then
-        echo "zsh"
-    elif [ -n "${BASH_VERSION:-}" ]; then
-        echo "bash"
-    else
-        echo "bash"
-    fi
-}
-
-get_shell_config() {
-    local shell_type=$1
-    local config_key=$2
-    echo "$CONFIG" | jq -r ".shell_integration.shells.$shell_type.$config_key // empty"
-}
-
-# ========================================
-# DEPENDENCY FUNCTIONS
-# ========================================
-
+# Basic dependency check
 check_dependencies() {
     print_status "working" "Checking dependencies..."
     local missing_deps=()
     local has_errors=false
-    
+
     while IFS= read -r dep_json; do
         [ -z "$dep_json" ] && continue
         
@@ -93,7 +142,7 @@ check_dependencies() {
             has_errors=true
         fi
     done < <(echo "$CONFIG" | jq -c '.dependencies.required[]? // empty')
-    
+
     if [ "$has_errors" = true ]; then
         print_status "error" "Missing dependencies:"
         for dep in "${missing_deps[@]}"; do
@@ -101,23 +150,20 @@ check_dependencies() {
         done
         return 1
     fi
-    
+
     print_status "success" "All dependencies satisfied"
     return 0
 }
 
-# ========================================
-# BUILD FUNCTIONS
-# ========================================
-
+# Basic build function
 build_app() {
     print_status "working" "Building application..."
-    
+
     cd "$PROJECT_ROOT" || return 1
-    
+
     local build_args=$(get_config '.build.dotnet_args.build')
     build_args="${build_args:--c Release}"
-    
+
     if dotnet build $build_args; then
         print_status "success" "Build successful"
         return 0
@@ -127,24 +173,24 @@ build_app() {
     fi
 }
 
+# Basic publish function
 publish_app() {
     print_status "working" "Publishing application..."
-    
+
     cd "$PROJECT_ROOT" || return 1
-    
+
     local binary_name=$(get_config '.project.binary_name')
     binary_name="${binary_name:-wurp-terminal}"
-    
-    # Publish (let .NET use its default structure)
+
     local publish_args="-c Release --self-contained false"
-    
+
     if dotnet publish $publish_args; then
         print_status "success" "Publish successful"
-        
+
         local user_bin_path=$(get_config '.paths.user_bin')
         local user_bin=$(expand_path "${user_bin_path:-$HOME/.local/bin}")
-        
-        # Find the actual binary location (check common .NET publish paths)
+
+        # Find the actual binary location
         local actual_binary=""
         local search_paths=(
             "bin/Release/net8.0/linux-x64/publish/$binary_name"
@@ -153,7 +199,7 @@ publish_app() {
             "bin/Release/net8.0/linux-x64/publish/$binary_name.dll"
             "bin/Release/net8.0/publish/$binary_name.dll"
         )
-        
+
         for path in "${search_paths[@]}"; do
             if [ -f "$PROJECT_ROOT/$path" ]; then
                 actual_binary="$PROJECT_ROOT/$path"
@@ -161,22 +207,18 @@ publish_app() {
                 break
             fi
         done
-        
+
         if [ -z "$actual_binary" ]; then
             print_status "error" "Published binary not found"
-            print_status "info" "Searched locations:"
-            for path in "${search_paths[@]}"; do
-                echo "  - $path"
-            done
             return 1
         fi
-        
+
         chmod +x "$actual_binary"
-        
+
         mkdir -p "$user_bin"
         [ -L "$user_bin/$binary_name" ] && rm -f "$user_bin/$binary_name"
         [ -f "$user_bin/$binary_name" ] && rm -f "$user_bin/$binary_name"
-        
+
         # Create a wrapper script if it's a .dll
         if [[ "$actual_binary" == *.dll ]]; then
             cat > "$user_bin/$binary_name" << WRAPPER_EOF
@@ -189,7 +231,7 @@ WRAPPER_EOF
             ln -s "$actual_binary" "$user_bin/$binary_name"
             print_color "cyan" "🔗 Symlink created: $user_bin/$binary_name"
         fi
-        
+
         if [[ ":$PATH:" != *":$user_bin:"* ]]; then
             print_status "warning" "Add $user_bin to your PATH:"
             echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
@@ -202,214 +244,12 @@ WRAPPER_EOF
     fi
 }
 
-# ========================================
-# SHELL INTEGRATION FUNCTIONS
-# ========================================
-
-install_shell_integration() {
-    print_status "working" "Installing shell integration..."
-    
-    local current_shell=$(detect_current_shell)
-    print_color "cyan" "Detected shell: $current_shell"
-    
-    local rc_file_path=$(get_shell_config "$current_shell" "rc_file")
-    local rc_file=$(expand_path "${rc_file_path:-$HOME/.bashrc}")
-    
-    local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Wurp Terminal Integration}"
-    
-    if grep -q "$marker" "$rc_file" 2>/dev/null; then
-        print_status "info" "Shell integration already installed"
-        return 0
-    fi
-    
-    local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-wurp-terminal}"
-    
-    # Build integration block
-    local integration_block=""
-    integration_block+="\n$marker\n"
-    
-    while IFS= read -r alias_line; do
-        [ -n "$alias_line" ] && integration_block+="$alias_line\n"
-    done < <(echo "$CONFIG" | jq -r '.shell_integration.aliases[]? // empty')
-    
-    integration_block+="\n# AI helper functions\n"
-    integration_block+="wurp_explain() { $binary_name ai explain \"\$*\"; }\n"
-    integration_block+="wurp_suggest() { $binary_name ai suggest \"\$*\"; }\n"
-    integration_block+="wurp_debug() { $binary_name ai debug \"\$*\"; }\n\n"
-    
-    while IFS= read -r alias_line; do
-        [ -n "$alias_line" ] && integration_block+="$alias_line\n"
-    done < <(echo "$CONFIG" | jq -r '.shell_integration.quick_aliases[]? // empty')
-    
-    echo -e "$integration_block" >> "$rc_file"
-    
-    print_status "success" "Shell integration installed"
-    print_color "cyan" "Restart your shell or run: source $rc_file"
-}
-
-# ========================================
-# SERVICE FUNCTIONS
-# ========================================
-
-check_freelance_ai() {
-    print_status "working" "Checking FreelanceAI service..."
-    
-    local health_url=$(get_config '.services.freelance_ai.health_url')
-    health_url="${health_url:-http://localhost:5000/health}"
-    
-    if curl -s "$health_url" > /dev/null 2>&1; then
-        print_status "success" "FreelanceAI API is running"
-        return 0
-    else
-        print_status "warning" "FreelanceAI API not running"
-        return 1
-    fi
-}
-
-check_ollama() {
-    local health_url=$(get_config '.services.ollama.health_url')
-    health_url="${health_url:-http://localhost:11434/api/tags}"
-    
-    if curl -s "$health_url" > /dev/null 2>&1; then
-        print_status "success" "Ollama is running"
-        return 0
-    else
-        print_status "info" "Ollama not running (optional)"
-        return 1
-    fi
-}
-
-# ========================================
-# DESKTOP INTEGRATION FUNCTIONS
-# ========================================
-
-create_desktop_entry() {
-    print_status "working" "Creating desktop entry..."
-    
-    local desktop_dir_path=$(get_config '.paths.desktop_dir')
-    local desktop_dir=$(expand_path "${desktop_dir_path:-$HOME/.local/share/applications}")
-    
-    local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-wurp-terminal}"
-    
-    local desktop_file="$desktop_dir/$binary_name.desktop"
-    
-    local publish_path=$(get_config '.paths.publish_dir')
-    local publish_dir=$(expand_path "${publish_path:-bin/Release/net8.0/publish}")
-    
-    mkdir -p "$desktop_dir"
-    
-    local entry_name=$(get_config '.desktop_entry.name')
-    entry_name="${entry_name:-Wurp (Warp Terminal Clone)}"
-    
-    local entry_comment=$(get_config '.desktop_entry.comment')
-    entry_comment="${entry_comment:-AI-Powered Terminal built with .NET}"
-    
-    local entry_icon=$(get_config '.desktop_entry.icon')
-    entry_icon="${entry_icon:-utilities-terminal}"
-    
-    local entry_categories=$(get_config '.desktop_entry.categories')
-    entry_categories="${entry_categories:-System;TerminalEmulator;}"
-    
-    local entry_keywords=$(get_config '.desktop_entry.keywords')
-    entry_keywords="${entry_keywords:-terminal;console;command;shell;ai;}"
-    
-    cat > "$desktop_file" << DESKTOP_EOF
-[Desktop Entry]
-Name=$entry_name
-Comment=$entry_comment
-Exec=$PROJECT_ROOT/$publish_dir/$binary_name
-Icon=$entry_icon
-Type=Application
-Categories=$entry_categories
-Terminal=false
-StartupNotify=true
-Keywords=$entry_keywords
-DESKTOP_EOF
-    
-    chmod +x "$desktop_file"
-    print_status "success" "Desktop entry created"
-}
-
-# ========================================
-# STATUS FUNCTIONS
-# ========================================
-
-show_status() {
-    local project_name=$(get_config '.project.name')
-    project_name="${project_name:-Wurp (Warp Terminal Clone)}"
-    
-    print_color "cyan" "🚀 $project_name Status"
-    echo ""
-    
-    local binary_name=$(get_config '.project.binary_name')
-    binary_name="${binary_name:-wurp-terminal}"
-    
-    # Use same search logic as publish_app
-    local actual_binary=""
-    local search_paths=(
-        "bin/Release/net8.0/linux-x64/publish/$binary_name"
-        "bin/Release/net8.0/publish/$binary_name"
-        "bin/Release/net8.0/linux-x64/$binary_name"
-        "bin/Release/net8.0/linux-x64/publish/$binary_name.dll"
-        "bin/Release/net8.0/publish/$binary_name.dll"
-    )
-    
-    for path in "${search_paths[@]}"; do
-        if [ -f "$PROJECT_ROOT/$path" ]; then
-            actual_binary="$PROJECT_ROOT/$path"
-            break
-        fi
-    done
-    
-    local user_bin_path=$(get_config '.paths.user_bin')
-    local user_bin=$(expand_path "${user_bin_path:-$HOME/.local/bin}")
-    
-    # Check build status
-    if [ -n "$actual_binary" ]; then
-        print_status "success" "Application built and published"
-        echo -e "   Location: $actual_binary"
-    else
-        print_status "error" "Application not built"
-    fi
-    
-    # Check symlink
-    [ -L "$user_bin/$binary_name" ] && print_status "success" "Symlink installed" || print_status "warning" "Symlink not installed"
-    
-    # Check PATH
-    [[ ":$PATH:" == *":$user_bin:"* ]] && print_status "success" "PATH configured correctly" || print_status "warning" "~/.local/bin not in PATH"
-    
-    # Check shell integration
-    local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Wurp Terminal Integration}"
-    
-    local current_shell=$(detect_current_shell)
-    local rc_file_path=$(get_shell_config "$current_shell" "rc_file")
-    local rc_file=$(expand_path "$rc_file_path")
-    
-    if [ -f "$rc_file" ] && grep -q "$marker" "$rc_file" 2>/dev/null; then
-        print_status "success" "Shell integration installed ($current_shell)"
-    else
-        print_status "warning" "Shell integration not installed"
-    fi
-    
-    # Check services
-    check_freelance_ai > /dev/null 2>&1 && print_status "success" "FreelanceAI API available" || print_status "warning" "FreelanceAI API not available"
-    
-    echo ""
-}
-
-# ========================================
-# RUN FUNCTIONS
-# ========================================
-
+# Basic run function
 run_app() {
     local binary_name=$(get_config '.project.binary_name')
     binary_name="${binary_name:-wurp-terminal}"
-    
-    # Use same search logic as publish_app
+
+    # Try to find the published binary
     local actual_binary=""
     local search_paths=(
         "bin/Release/net8.0/linux-x64/publish/$binary_name"
@@ -418,14 +258,14 @@ run_app() {
         "bin/Release/net8.0/linux-x64/publish/$binary_name.dll"
         "bin/Release/net8.0/publish/$binary_name.dll"
     )
-    
+
     for path in "${search_paths[@]}"; do
         if [ -f "$PROJECT_ROOT/$path" ]; then
             actual_binary="$PROJECT_ROOT/$path"
             break
         fi
     done
-    
+
     if [ -n "$actual_binary" ]; then
         if [[ "$actual_binary" == *.dll ]]; then
             exec dotnet "$actual_binary" "$@"
@@ -438,76 +278,61 @@ run_app() {
     fi
 }
 
-# ========================================
-# CLEANUP FUNCTIONS
-# ========================================
-
-uninstall() {
+# Basic status function
+show_status() {
     local project_name=$(get_config '.project.name')
     project_name="${project_name:-Wurp (Warp Terminal Clone)}"
-    
-    print_status "working" "Uninstalling $project_name..."
-    
+
+    print_color "cyan" "🚀 $project_name Status"
+    echo ""
+
     local binary_name=$(get_config '.project.binary_name')
     binary_name="${binary_name:-wurp-terminal}"
-    
+
+    # Check if application is built
+    local actual_binary=""
+    local search_paths=(
+        "bin/Release/net8.0/linux-x64/publish/$binary_name"
+        "bin/Release/net8.0/publish/$binary_name"
+        "bin/Release/net8.0/linux-x64/$binary_name"
+        "bin/Release/net8.0/linux-x64/publish/$binary_name.dll"
+        "bin/Release/net8.0/publish/$binary_name.dll"
+    )
+
+    for path in "${search_paths[@]}"; do
+        if [ -f "$PROJECT_ROOT/$path" ]; then
+            actual_binary="$PROJECT_ROOT/$path"
+            break
+        fi
+    done
+
+    if [ -n "$actual_binary" ]; then
+        print_status "success" "Application built and published"
+        echo -e "   Location: $actual_binary"
+    else
+        print_status "error" "Application not built"
+    fi
+
     local user_bin_path=$(get_config '.paths.user_bin')
     local user_bin=$(expand_path "${user_bin_path:-$HOME/.local/bin}")
-    
-    local desktop_dir_path=$(get_config '.paths.desktop_dir')
-    local desktop_dir=$(expand_path "${desktop_dir_path:-$HOME/.local/share/applications}")
-    
-    local marker=$(get_config '.shell_integration.marker')
-    marker="${marker:-# Wurp Terminal Integration}"
-    
-    # Remove symlink
-    if [ -L "$user_bin/$binary_name" ]; then
-        rm -f "$user_bin/$binary_name"
-        print_status "success" "Symlink removed"
-    fi
-    
-    # Remove desktop entry
-    local desktop_file="$desktop_dir/$binary_name.desktop"
-    if [ -f "$desktop_file" ]; then
-        rm -f "$desktop_file"
-        print_status "success" "Desktop entry removed"
-    fi
-    
-    # Remove shell integration
-    local current_shell=$(detect_current_shell)
-    local rc_file_path=$(get_shell_config "$current_shell" "rc_file")
-    local rc_file=$(expand_path "$rc_file_path")
-    
-    if [ -f "$rc_file" ] && grep -q "$marker" "$rc_file" 2>/dev/null; then
-        cp "$rc_file" "$rc_file.wurp.bak"
-        sed -i "/$marker/,/^$/d" "$rc_file"
-        print_status "success" "Shell integration removed"
-        print_color "cyan" "Backup created: $rc_file.wurp.bak"
-    fi
-    
-    # Clean build artifacts
-    cd "$PROJECT_ROOT" || return 1
-    local clean_dirs_str
-    clean_dirs_str=$(echo "$CONFIG" | jq -r '.build.clean_dirs[]? // empty' | tr '\n' ' ')
-    IFS=' ' read -r -a clean_dirs <<< "$clean_dirs_str"
-    for dir in "${clean_dirs[@]}"; do
-        [ -n "$dir" ] && [ -d "$dir" ] && rm -rf "$dir"
-    done
-    
-    print_status "success" "Uninstall complete"
+
+    # Check symlink
+    [ -L "$user_bin/$binary_name" ] && print_status "success" "Symlink installed" || print_status "warning" "Symlink not installed"
+
+    # Check PATH
+    [[ ":$PATH:" == *":$user_bin:"* ]] && print_status "success" "PATH configured correctly" || print_status "warning" "~/.local/bin not in PATH"
+
+    echo ""
 }
 
-# ========================================
-# HELP FUNCTIONS
-# ========================================
-
+# Basic help function
 show_help() {
     local project_name=$(get_config '.project.name')
     project_name="${project_name:-Wurp (Warp Terminal Clone)}"
-    
+
     local binary_name=$(get_config '.project.binary_name')
     binary_name="${binary_name:-wurp-terminal}"
-    
+
     print_color "cyan" "$project_name - Build & Installation Script"
     echo ""
     print_color "yellow" "Usage:"
@@ -519,27 +344,167 @@ show_help() {
     echo "  install       - Full installation (build, publish, integrate)"
     echo "  run           - Run the application"
     echo "  status        - Show installation status"
-    echo "  shell         - Install shell integration only"
-    echo "  desktop       - Create desktop entry"
-    echo "  uninstall     - Remove all traces"
     echo "  check         - Check dependencies"
     echo "  help          - Show this help"
-    echo ""
-    print_color "yellow" "Examples:"
-    print_color "green" "  ./scripts/$binary_name install"
-    echo "    # Full installation"
-    print_color "green" "  ./scripts/$binary_name run"
-    echo "    # Run directly"
-    print_color "green" "  ./scripts/$binary_name status"
-    echo "    # Check status"
-    echo ""
-    print_color "cyan" "After installation, use:"
-    print_color "green" "  $binary_name"
-    echo "                      # Start terminal"
-    print_color "green" "  wt"
-    echo "                                 # Short alias"
-    print_color "green" "  explain 'docker ps'"
-    echo "               # Explain command"
-    print_color "green" "  suggest 'deploy to kubernetes'"
-    echo "    # Get suggestions"
 }
+
+# Stub functions for missing functionality (will be implemented in future modules)
+install_shell_integration() {
+    print_status "info" "Shell integration not yet implemented in modular system"
+}
+
+create_desktop_entry() {
+    print_status "info" "Desktop integration not yet implemented in modular system"
+}
+
+check_freelance_ai() {
+    print_status "info" "Service checks not yet implemented in modular system"
+}
+
+check_ollama() {
+    print_status "info" "Service checks not yet implemented in modular system"
+}
+
+uninstall() {
+    print_status "info" "Uninstall not yet implemented in modular system"
+}
+
+# ========================================
+# BOOTSTRAP ORCHESTRATION
+# ========================================
+
+# Execute the bootstrap process with modular support
+execute_bootstrap_with_args() {
+    local base_dir="$1"
+    local project_name="$2"
+
+    print_color "cyan" "🚀 Creating Wurp (Warp Terminal Clone) Project Structure"
+    print_color "cyan" "=================================================="
+    echo ""
+
+    local project_dir="$base_dir/$project_name"
+
+    debug_print "Using provided base_dir: '$base_dir'"
+    debug_print "Using provided project_name: '$project_name'"
+    debug_print "final project_dir: '$project_dir'"
+    echo ""
+
+    # Initialize module system
+    if ! init_module_system; then
+        print_status "warning" "Module system not available, using legacy mode"
+    else
+        # Try to load modules
+        if load_modules; then
+            print_status "success" "Modular system loaded successfully"
+        else
+            print_status "warning" "Module loading failed, using legacy mode"
+        fi
+    fi
+
+    # Create project structure and change to it
+    if ! create_project_structure "$project_dir"; then
+        print_status "error" "Failed to create project structure"
+        return 1
+    fi
+
+    # Verify we're in the right directory
+    print_status "info" "Current working directory: $(pwd)"
+    echo ""
+
+    # Create all project files
+    print_status "working" "Creating project files..."
+
+    # Use modular functions if available, otherwise use legacy individual functions
+    if command -v create_all_project_files &> /dev/null; then
+        create_all_project_files || { print_status "error" "Failed to create project files"; return 1; }
+    else
+        # Legacy file creation
+        print_status "warning" "Using legacy file creation mode"
+        create_csproj_file || { print_status "error" "Failed to create .csproj file"; return 1; }
+        create_program_cs || { print_status "error" "Failed to create Program.cs"; return 1; }
+        create_core_files || { print_status "error" "Failed to create Core files"; return 1; }
+        create_wurp_config || { print_status "error" "Failed to create wurp-config.json"; return 1; }
+        create_readme || { print_status "error" "Failed to create README.md"; return 1; }
+    fi
+
+    create_wurp_functions || { print_status "error" "Failed to create functions library"; return 1; }
+    create_main_launcher || { print_status "error" "Failed to create main launcher"; return 1; }
+
+    # Make scripts executable
+    local main_script="scripts/wurp-terminal"
+    local functions_script="scripts/lib/wurp-terminal-functions.sh"
+
+    if [ -f "$main_script" ]; then
+        chmod +x "$main_script"
+        print_status "success" "Made executable: $main_script"
+    fi
+
+    if [ -f "$functions_script" ]; then
+        chmod +x "$functions_script"
+        print_status "success" "Made executable: $functions_script"
+    fi
+
+    # Final status
+    echo ""
+    print_status "party" "Wurp Terminal project structure created successfully!"
+    echo ""
+    print_status "folder" "Project location: $project_dir"
+    echo ""
+    print_status "rocket" "Next steps:"
+    echo "   cd \"$project_dir\""
+    echo "   ./scripts/wurp-terminal check    # Check dependencies"
+    echo "   ./scripts/wurp-terminal install  # Build and install"
+    echo "   wurp-terminal                    # Run the terminal"
+    echo ""
+    print_status "success" "All files created:"
+    echo "   ├── Program.cs (Main entry point)"
+    echo "   ├── Core/ (Modular class architecture)"
+    echo "   │   ├── WurpTerminalService.cs"
+    echo "   │   ├── AIIntegration.cs"
+    echo "   │   └── ThemeManager.cs"
+    echo "   ├── WurpTerminal.csproj"
+    echo "   ├── wurp-config.json (Complete configuration)"
+    echo "   ├── scripts/wurp-terminal (Main launcher)"
+    echo "   ├── scripts/lib/wurp-terminal-functions.sh (Modular library)"
+    echo "   └── README.md"
+    echo ""
+    print_status "target" "The project is ready for testing!"
+    echo ""
+    print_status "info" "💡 To enable full modular functionality:"
+    echo "   1. Create scripts/lib/modules/ directory in generated project"
+    echo "   2. Add the modular function files (00-core.sh, 10-project.sh, 20-files.sh)"
+    echo "   3. Restart to use enhanced modular features"
+
+    return 0
+}
+
+# Keep the old function for backward compatibility
+execute_bootstrap() {
+    local base_dir=$(get_config '.bootstrap.base_dir')
+    local project_subdir=$(get_config '.bootstrap.project_subdir')
+
+    if [ -z "$base_dir" ]; then
+        base_dir="$HOME/Development"
+    fi
+
+    if [ -z "$project_subdir" ]; then
+        project_subdir="wurp-terminal"
+    fi
+
+    base_dir=$(expand_path "$base_dir")
+
+    execute_bootstrap_with_args "$base_dir" "$project_subdir"
+}
+
+# ========================================
+# MODULE SYSTEM INITIALIZATION
+# ========================================
+
+# Initialize the module system when this file is sourced
+if init_module_system; then
+    load_modules
+fi
+
+# Export key functions for external use
+export -f execute_bootstrap execute_bootstrap_with_args
+export -f print_status print_color get_config expand_path debug_print

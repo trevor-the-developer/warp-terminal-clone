@@ -1,3 +1,7 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
 namespace WurpTerminal.Core;
 
 public class AIIntegration

@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WurpTerminal", "WurpTerminal.csproj", "{4310A081-931A-8897-8CF3-343AE5B7ABC2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WurpTerminal", "WurpTerminal.csproj", "{576713E3-F438-5B69-AD5D-C343EACEDAE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,15 +10,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4310A081-931A-8897-8CF3-343AE5B7ABC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4310A081-931A-8897-8CF3-343AE5B7ABC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4310A081-931A-8897-8CF3-343AE5B7ABC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4310A081-931A-8897-8CF3-343AE5B7ABC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{576713E3-F438-5B69-AD5D-C343EACEDAE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{576713E3-F438-5B69-AD5D-C343EACEDAE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{576713E3-F438-5B69-AD5D-C343EACEDAE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{576713E3-F438-5B69-AD5D-C343EACEDAE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {B2BBAF11-AD5E-4181-9AAC-31F9C1CEE1EA}
+		SolutionGuid = {4C78DE3C-5659-4A42-983F-8DDE9AA3DA47}
 	EndGlobalSection
 EndGlobal

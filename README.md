@@ -1,4 +1,4 @@
-# 🚀 Warp Terminal Clone (Wurp Terminal)
+# 🚀 Wurp (Warp Terminal Clone)
 
 A feature-rich terminal emulator built with .NET 8, featuring AI integration, command history, auto-completion, and themes.
 
@@ -42,7 +42,11 @@ help
 
 ## Project Structure
 
-- `Program.cs` - Main terminal application
+- `Program.cs` - Main entry point
+- `Core/` - Core application classes
+  - `WurpTerminalService.cs` - Main terminal service
+  - `AIIntegration.cs` - AI integration logic
+  - `ThemeManager.cs` - Theme management
 - `wurp-config.json` - Centralized configuration
 - `scripts/wurp-terminal` - Installation script
 - `scripts/lib/wurp-terminal-functions.sh` - Function library

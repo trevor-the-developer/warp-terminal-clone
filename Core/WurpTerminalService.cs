@@ -1,13 +1,16 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace WurpTerminal.Core;
 
 public class WurpTerminalService
 {
     private readonly List<string> _history = new();
-    private readonly string _historyFile =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        ".wurp_terminal_history");
+    private readonly string _historyFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".wurp_terminal_history");
     private readonly AIIntegration _ai = new();
     private readonly ThemeManager _themes = new();
 
@@ -33,7 +36,7 @@ public class WurpTerminalService
                 ShowHelp();
                 break;
             case "version":
-                Console.WriteLine("Wurp Terminal (Warp Terminal Clone) v1.0 - .NET 8");
+                Console.WriteLine("Wurp (Warp Terminal Clone) v1.0 - .NET 8");
                 break;
             default:
                 Console.WriteLine($"Unknown command: {command}");

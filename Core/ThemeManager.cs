@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace WurpTerminal.Core;
 
 public class ThemeManager
@@ -6,7 +10,7 @@ public class ThemeManager
     {
         ["default"] = new()
         {
-            ["prompt"] = "\x1b[36mwarp",
+            ["prompt"] = "\x1b[36mwurp",
             ["red"] = "\x1b[31m",
             ["green"] = "\x1b[32m",
             ["yellow"] = "\x1b[33m",
@@ -15,7 +19,7 @@ public class ThemeManager
         },
         ["dark"] = new()
         {
-            ["prompt"] = "\x1b[35mwarp",
+            ["prompt"] = "\x1b[35mwurp",
             ["red"] = "\x1b[91m",
             ["green"] = "\x1b[92m",
             ["yellow"] = "\x1b[93m",

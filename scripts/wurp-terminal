@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/wurp-terminal
-# Main launcher script for Warp Terminal Clone
+# Main launcher script for Wurp (Warp Terminal Clone)
 
 set -euo pipefail
 
@@ -33,16 +33,16 @@ fi
 main() {
     local command=${1:-help}
     shift || true
-    
+
     case $command in
         "build")
             check_dependencies && build_app
             ;;
-        
+
         "publish")
             check_dependencies && build_app && publish_app
             ;;
-        
+
         "install")
             check_dependencies && \
             build_app && \
@@ -52,31 +52,31 @@ main() {
             print_status "success" "🎉 Installation complete!" && \
             show_status
             ;;
-        
+
         "run")
             check_dependencies && run_app "$@"
             ;;
-        
+
         "status")
             show_status
             ;;
-        
+
         "shell")
             install_shell_integration
             ;;
-        
+
         "desktop")
             create_desktop_entry
             ;;
-        
+
         "check")
             check_dependencies && check_freelance_ai && check_ollama
             ;;
-        
+
         "uninstall")
             uninstall
             ;;
-        
+
         "help"|*)
             show_help
             ;;
