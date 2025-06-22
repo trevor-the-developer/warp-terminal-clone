@@ -2,6 +2,12 @@
 
 A feature-rich terminal emulator built with .NET 8, featuring AI integration, command history, auto-completion, and themes.
 
+## Requirements:
+
+- [Freelance AI](https://github.com/trevor-the-developer/Freelance-AI)
+
+To access the AI and API features ensure the Freelance AI project is running first.
+
 ## Quick Start
 
 ```bash
