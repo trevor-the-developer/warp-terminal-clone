@@ -71,8 +71,27 @@
   },
   "services": {
     "freelance_ai": {
+      "base_url": "http://localhost:5000",
       "health_url": "http://localhost:5000/health",
-      "description": "FreelanceAI API service"
+      "api_endpoints": {
+        "generate": "/api/ai/generate",
+        "status": "/api/ai/status",
+        "spend": "/api/ai/spend",
+        "health": "/api/ai/health",
+        "history": "/api/ai/history",
+        "rollover": "/api/ai/rollover",
+        "swagger": "/swagger"
+      },
+      "description": "FreelanceAI Smart AI Router with intelligent provider selection",
+      "features": [
+        "Smart provider routing (Groq, Ollama)",
+        "Cost optimization and tracking",
+        "Response history analytics",
+        "Health monitoring",
+        "Automatic failover",
+        "Rate limiting",
+        "Budget management"
+      ]
     },
     "ollama": {
       "health_url": "http://localhost:11434/api/tags",

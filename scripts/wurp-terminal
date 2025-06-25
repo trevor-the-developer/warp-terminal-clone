@@ -73,6 +73,10 @@ main() {
             check_dependencies && check_freelance_ai && check_ollama
             ;;
 
+        "ai-status")
+            cd "$PROJECT_ROOT" && dotnet run ai status 2>/dev/null || echo "⚠️  Run 'build' first"
+            ;;
+
         "uninstall")
             uninstall
             ;;
