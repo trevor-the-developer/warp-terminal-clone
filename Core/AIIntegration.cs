@@ -16,7 +16,7 @@ public class AIIntegration
             Console.WriteLine("  ai debug <error>         - Debug help for errors");
             Console.WriteLine("  ai code <task>          - Generate code");
             Console.WriteLine("  ai review <code>        - Review code");
-            Console.WriteLine("  ai optimize <task>      - Optimization suggestions");
+            Console.WriteLine("  ai optimise <task>      - Optimisation suggestions");
             Console.WriteLine("  ai test <task>          - Testing guidance");
             return;
         }
@@ -73,17 +73,17 @@ public class AIIntegration
             {
                 var responseText = await response.Content.ReadAsStringAsync();
                 var jsonResponse = System.Text.Json.JsonDocument.Parse(responseText);
-                
+
                 if (jsonResponse.RootElement.TryGetProperty("success", out var success) && success.GetBoolean())
                 {
                     if (jsonResponse.RootElement.TryGetProperty("content", out var contentProp))
                     {
                         var aiContent = contentProp.GetString();
-                        var provider = jsonResponse.RootElement.TryGetProperty("provider", out var providerProp) 
+                        var provider = jsonResponse.RootElement.TryGetProperty("provider", out var providerProp)
                             ? providerProp.GetString() : "Unknown";
-                        var cost = jsonResponse.RootElement.TryGetProperty("cost", out var costProp) 
+                        var cost = jsonResponse.RootElement.TryGetProperty("cost", out var costProp)
                             ? costProp.GetDecimal() : 0m;
-                        
+
                         Console.WriteLine($"📊 Provider: {provider} | Cost: ${cost:F4}");
                         return aiContent;
                     }
@@ -107,7 +107,7 @@ public class AIIntegration
             "debug" => $"Help debug this issue and provide troubleshooting steps: {prompt}",
             "code" => $"Generate clean, production-ready code for: {prompt}",
             "review" => $"Review this code and suggest improvements: {prompt}",
-            "optimize" => $"Optimize this code or process: {prompt}",
+            "optimise" => $"Optimise this code or process: {prompt}",
             "test" => $"Provide testing strategies and examples for: {prompt}",
             _ => prompt
         };
@@ -142,8 +142,8 @@ public class AIIntegration
                 Console.WriteLine($"🔍 Code review for: {prompt}");
                 Console.WriteLine("• Local fallback - basic syntax checking");
                 break;
-            case "optimize":
-                Console.WriteLine($"⚡ Optimization suggestions for: {prompt}");
+            case "optimise":
+                Console.WriteLine($"⚡ Optimisation suggestions for: {prompt}");
                 Console.WriteLine("• Local fallback - general performance tips");
                 break;
             case "test":
@@ -192,7 +192,7 @@ public class AIIntegration
             {
                 var statusText = await statusResponse.Content.ReadAsStringAsync();
                 var statusJson = System.Text.Json.JsonDocument.Parse(statusText);
-                
+
                 Console.WriteLine("📊 Provider Status:");
                 foreach (var provider in statusJson.RootElement.EnumerateArray())
                 {
@@ -200,7 +200,7 @@ public class AIIntegration
                     var isHealthy = provider.GetProperty("isHealthy").GetBoolean();
                     var requests = provider.GetProperty("requestsToday").GetInt32();
                     var cost = provider.GetProperty("costToday").GetDecimal();
-                    
+
                     var healthIcon = isHealthy ? "✅" : "❌";
                     Console.WriteLine($"  {healthIcon} {name}: {requests} requests, ${cost:F4} spent today");
                 }
