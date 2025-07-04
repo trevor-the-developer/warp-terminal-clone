@@ -1,0 +1,91 @@
+#!/bin/bash
+# scripts/wurp-terminal
+# Main launcher script for Wurp (Warp Terminal Clone)
+
+set -euo pipefail
+
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Load configuration from JSON
+CONFIG_FILE="$PROJECT_ROOT/wurp-config.json"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "❌ Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
+
+# Read configuration into variable
+CONFIG=$(cat "$CONFIG_FILE")
+
+# Source the function library
+FUNCTIONS_FILE="$SCRIPT_DIR/lib/wurp-terminal-functions.sh"
+if [ -f "$FUNCTIONS_FILE" ]; then
+    # Set global variables for functions
+    export SCRIPT_DIR PROJECT_ROOT CONFIG
+    source "$FUNCTIONS_FILE"
+else
+    echo "❌ Function library not found: $FUNCTIONS_FILE"
+    exit 1
+fi
+
+# Main command processing
+main() {
+    local command=${1:-help}
+    shift || true
+
+    case $command in
+        "build")
+            check_dependencies && build_app
+            ;;
+
+        "publish")
+            check_dependencies && build_app && publish_app
+            ;;
+
+        "install")
+            check_dependencies && \
+            build_app && \
+            publish_app && \
+            install_shell_integration && \
+            create_desktop_entry && \
+            print_status "success" "🎉 Installation complete!" && \
+            show_status
+            ;;
+
+        "run")
+            check_dependencies && run_app "$@"
+            ;;
+
+        "status")
+            show_status
+            ;;
+
+        "shell")
+            install_shell_integration
+            ;;
+
+        "desktop")
+            create_desktop_entry
+            ;;
+
+        "check")
+            check_dependencies && check_freelance_ai && check_ollama
+            ;;
+
+        "ai-status")
+            cd "$PROJECT_ROOT" && dotnet run ai status 2>/dev/null || echo "⚠️  Run 'build' first"
+            ;;
+
+        "uninstall")
+            uninstall
+            ;;
+
+        "help"|*)
+            show_help
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"

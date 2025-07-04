@@ -1,0 +1,108 @@
+{
+  "project": {
+    "name": "Wurp (Warp Terminal Clone)",
+    "description": "AI-Powered Terminal built with .NET 9",
+    "version": "1.0.0",
+    "binary_name": "wurp-terminal"
+  },
+  "dependencies": {
+    "required": [
+      {
+        "name": ".NET 9 SDK",
+        "command": "dotnet",
+        "install_hint": "Install from https://dotnet.microsoft.com/download"
+      },
+      {
+        "name": "jq",
+        "command": "jq",
+        "install_hint": "sudo apt install jq (Ubuntu) or brew install jq (macOS)"
+      },
+      {
+        "name": "curl",
+        "command": "curl",
+        "install_hint": "sudo apt install curl (Ubuntu) or brew install curl (macOS)"
+      }
+    ],
+    "optional": [
+      {
+        "name": "FreelanceAI",
+        "description": "AI API service for enhanced responses"
+      },
+      {
+        "name": "Ollama",
+        "description": "Local AI model runner"
+      }
+    ]
+  },
+  "build": {
+    "dotnet_args": {
+      "build": "-c Release",
+      "publish": "-c Release --self-contained false"
+    },
+    "clean_dirs": [
+      "bin",
+      "obj"
+    ]
+  },
+  "paths": {
+    "publish_dir": "bin/Release/net9.0/publish",
+    "user_bin": "$HOME/.local/bin",
+    "desktop_dir": "$HOME/.local/share/applications"
+  },
+  "shell_integration": {
+    "marker": "# Wurp Terminal Integration",
+    "shells": {
+      "bash": {
+        "rc_file": "$HOME/.bashrc"
+      },
+      "zsh": {
+        "rc_file": "$HOME/.zshrc"
+      }
+    },
+    "aliases": [
+      "alias wt='wurp-terminal'",
+      "alias wurp='wurp-terminal'"
+    ],
+    "quick_aliases": [
+      "alias explain='wurp-terminal ai explain'",
+      "alias suggest='wurp-terminal ai suggest'",
+      "alias debug='wurp-terminal ai debug'"
+    ]
+  },
+  "services": {
+    "freelance_ai": {
+      "base_url": "http://localhost:5000",
+      "health_url": "http://localhost:5000/health",
+      "api_endpoints": {
+        "generate": "/api/ai/generate",
+        "status": "/api/ai/status",
+        "spend": "/api/ai/spend",
+        "health": "/api/ai/health",
+        "history": "/api/ai/history",
+        "rollover": "/api/ai/rollover",
+        "swagger": "/swagger"
+      },
+      "description": "FreelanceAI Smart AI Router with intelligent provider selection",
+      "features": [
+        "Smart provider routing (Groq, Ollama)",
+        "Cost optimization and tracking",
+        "Response history analytics",
+        "Health monitoring",
+        "Automatic failover",
+        "Rate limiting",
+        "Budget management"
+      ]
+    },
+    "ollama": {
+      "health_url": "http://localhost:11434/api/tags",
+      "description": "Ollama local AI service"
+    }
+  },
+  "desktop_entry": {
+    "name": "Wurp (Warp Terminal Clone)",
+    "comment": "AI-Powered Terminal built with .NET",
+    "icon": "utilities-terminal",
+    "categories": "System;TerminalEmulator;",
+    "keywords": "terminal;console;command;shell;ai;"
+  }
+}

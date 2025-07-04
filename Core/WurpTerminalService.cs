@@ -36,7 +36,7 @@ public class WurpTerminalService
                 ShowHelp();
                 break;
             case "version":
-                Console.WriteLine("Wurp (Warp Terminal Clone) v1.0 - .NET 8");
+                Console.WriteLine("Wurp (Warp Terminal Clone) v1.0 - .NET 9");
                 break;
             default:
                 Console.WriteLine($"Unknown command: {command}");
@@ -96,7 +96,6 @@ public class WurpTerminalService
                 await _ai.HandleAICommands(parts[1..]);
                 return true;
             case "theme":
-            case "themes":
                 _themes.HandleThemeCommand(parts[1..]);
                 return true;
             case "clear":
@@ -104,16 +103,6 @@ public class WurpTerminalService
                 return true;
             case "history":
                 ShowHistory();
-                return true;
-            case "help":
-            case "commands":
-                ShowHelp();
-                return true;
-            case "version":
-                Console.WriteLine("Wurp (Warp Terminal Clone) v1.0 - .NET 8");
-                return true;
-            case "status":
-                await _ai.ShowFreelanceAIStatusAsync();
                 return true;
             default:
                 return false;

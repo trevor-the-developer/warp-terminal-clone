@@ -1,172 +1,102 @@
-# 🚀 Wurp Terminal - Standalone Project
+# 🚀 Wurp (Warp Terminal Clone)
 
-A modern, AI-powered terminal emulator built with .NET 8, featuring intelligent command assistance, themes, and comprehensive history management.
+A feature-rich terminal emulator built with .NET 9, featuring AI integration, command history, auto-completion, and themes.
 
 ## Quick Start
 
-### Using the Build Script (Recommended)
 ```bash
-# Navigate to the standalone project directory
-cd ~/workspace/wurp-terminal-standalone
+# Check dependencies
+./scripts/wurp-terminal check
 
-# Build and test the project
-./build.sh test
+# Install everything
+./scripts/wurp-terminal install
 
 # Run the terminal
-./build.sh run
-
-# Create a release build
-./build.sh publish
-```
-
-### Using .NET CLI Directly
-```bash
-# Navigate to the standalone project directory
-cd ~/workspace/wurp-terminal-standalone
-
-# Build the project
-dotnet build
-
-# Run the terminal (Debug mode)
-dotnet run
-
-# Or run the compiled binary directly
-./bin/Debug/net8.0/wurp-terminal
+wurp-terminal
 ```
 
 ## Features
 
-- 🤖 **AI Integration** - Full FreelanceAI API support with smart routing and cost tracking
-- 📜 **Command History** - Persistent command history with search capability
-- 🎨 **Multiple Themes** - Built-in themes: default, dark, and wurp
-- 🔧 **System Commands** - Execute any system command through the terminal
-- 💡 **Smart Help System** - Context-aware help and command suggestions
-- 🐚 **Cross-Shell Support** - Works with bash, zsh, and other shells
+- 🤖 **Enhanced AI Integration** - Full FreelanceAI API integration with smart routing and real-time cost tracking
+- 📊 **Real-time Metrics** - Provider selection and performance monitoring
+- 📜 **Command History** - Persistent history with search capability
+- 🎨 **Multiple Themes** - Customisable themes with default, dark, and wurp options
+- 🐚 **Cross-Shell Support** - Compatible with bash and zsh
+- ⚙️ **JSON Configuration** - Centralised config management for easy setup
+- 🔧 **Modular Architecture** - Clean separation of concerns with extendable modules
+
+## AI Commands
+
+The terminal includes comprehensive AI integration with FreelanceAI's smart routing system:
+
+### Basic AI Commands
+```bash
+# Explain commands and concepts
+ai explain "docker ps"        # Get detailed explanations
+ai suggest "deploy app"       # Get practical suggestions
+ai debug "permission denied"  # Troubleshooting help
+```
+
+### Advanced AI Commands
+```bash
+# Code generation with smart provider routing
+ai code "REST API controller in C#"
+ai code "React component for login form"
+
+# Code review and optimisation
+ai review "my-function.cs"           # Get code review feedback
+ai optimise "slow database query"    # Performance optimisation tips
+
+# Testing guidance
+ai test "async methods in C#"        # Testing strategies and examples
+```
+
+### Real-time Monitoring
+Each AI request shows:
+- 📊 **Provider Used**: Which AI service handled the request (Groq, Ollama)
+- 💰 **Cost Tracking**: Real-time cost per request
+- ⚡ **Performance**: Response time and success metrics
 
 ## Built-in Commands
 
-### AI Commands
 ```bash
-ai explain <command>        # Get detailed explanations
-ai suggest <task>          # Get practical suggestions
-ai debug <error>           # Troubleshooting help
-ai code <task>             # Generate code snippets
-ai review <code>           # Code review and improvements
-ai optimise <task>         # Performance optimization tips
-ai test <task>             # Testing strategies
-```
+# Theme management
+theme                    # Show current theme and options
+theme wurp              # Switch to wurp theme (cyan prompt)
+theme dark              # Switch to dark theme
+theme default           # Switch to default theme
 
-### Terminal Commands
-```bash
-theme                      # Show current theme and available options
-theme <name>               # Switch to a specific theme (default, dark, wurp)
-clear                      # Clear the terminal screen
-history                    # Show recent command history
-help / commands            # Display comprehensive help
-version                    # Show version information
-status                     # Check FreelanceAI API status
-exit / quit                # Exit the terminal gracefully
-```
+# Terminal operations
+clear                   # Clear screen
+history                 # Show command history
+help                    # Show comprehensive help
+exit / quit             # Exit gracefully
 
-### System Commands
-Any system command works normally:
-```bash
-ls -la                     # File operations
-git status                 # Version control
-npm install                # Package management
-docker ps                  # Container management
-```
-
-## Project Structure
-
-```
-wurp-terminal-standalone/
-├── Program.cs                     # Application entry point
-├── WurpTerminal.csproj           # .NET project configuration
-├── build.sh                      # Build and development script
-├── README.md                     # This documentation
-├── Core/                         # Core functionality modules
-│   ├── WurpTerminalService.cs    # Main terminal service
-│   ├── AIIntegration.cs          # FreelanceAI API integration
-│   └── ThemeManager.cs           # Theme management system
-├── bin/                          # Compiled binaries
-├── obj/                          # Build artifacts
-└── publish/                      # Published release binaries
-```
-
-## Requirements
-
-### Essential
-- **.NET SDK 8.0** or later
-- **Linux/macOS/Windows** (cross-platform)
-
-### Optional (for AI features)
-- **FreelanceAI API** running on `http://localhost:5000`
-- **Ollama** for local AI fallback
-
-## Development
-
-### Quick Development Workflow
-
-#### Using Build Script
-```bash
-# Clone or navigate to the project
-cd ~/workspace/wurp-terminal-standalone
-
-# Show available build commands
-./build.sh help
-
-# Build and test
-./build.sh test
-
-# Run in development mode
-./build.sh run
-
-# Create release build
-./build.sh release
-
-# Create deployable binary
-./build.sh publish
-
-# Clean build artifacts
-./build.sh clean
-```
-
-#### Using .NET CLI Directly
-```bash
-# Run in development mode with hot reload
-dotnet run
-
-# Build for release
-dotnet build --configuration Release
-
-# Publish as single-file executable
-dotnet publish --configuration Release --self-contained false --output ./publish
-```
-
-### Testing AI Integration
-```bash
-# Check if FreelanceAI is running
-curl http://localhost:5000/health
-
-# Test AI commands within the terminal
-ai explain "docker ps"
-ai suggest "deploy web application"
+# System commands work normally
+ls -la                  # File operations
+git status              # Version control
+npm install             # Package management
+docker ps               # Container management
 ```
 
 ## FreelanceAI Integration
 
-This terminal integrates seamlessly with the FreelanceAI service for intelligent assistance:
+This terminal is designed to work seamlessly with FreelanceAI's intelligent routing system:
 
-### Features
-- **Smart Provider Routing** - Automatically selects best AI provider (Groq, Ollama)
-- **Cost Tracking** - Real-time cost monitoring per request
+### Requirements
+- **FreelanceAI API** running on `http://localhost:5000`
+- Optional: **Ollama** for local AI fallback
+
+### Smart Features
+- **Automatic Provider Selection** - Routes to best available AI provider (Groq → Ollama)
+- **Cost Optimisation** - Real-time budget tracking and cost monitoring
 - **Health Monitoring** - Automatic failover when providers are unavailable
-- **Local Fallback** - Works offline with basic help functionality
+- **Rate Limiting** - Respects provider limits and quotas
+- **Response History** - Tracks all AI interactions for analytics
 
-### Setup FreelanceAI (Optional)
+### Setup FreelanceAI
 ```bash
-# Start FreelanceAI service (if available)
+# Clone and start FreelanceAI
 git clone <freelance-ai-repo>
 cd FreelanceAI
 dotnet run --project src/FreelanceAI.WebApi
@@ -175,74 +105,90 @@ dotnet run --project src/FreelanceAI.WebApi
 curl http://localhost:5000/health
 ```
 
-## Customization
+## Installation & Management
 
-### Adding New Themes
-Edit `Core/ThemeManager.cs` to add custom color schemes:
-```csharp
-["custom"] = new()
-{
-    ["prompt"] = "\x1b[95m→",
-    ["red"] = "\x1b[91m",
-    // ... add your colors
-}
+### Build Commands
+```bash
+./scripts/wurp-terminal check      # Verify dependencies
+./scripts/wurp-terminal build      # Build application
+./scripts/wurp-terminal publish    # Create optimised binary
+./scripts/wurp-terminal install    # Full installation
+./scripts/wurp-terminal status     # Show installation status
 ```
 
-### Adding New Commands
-Extend `Core/WurpTerminalService.cs` in the `ProcessSpecialCommandAsync` method:
-```csharp
-case "mycmd":
-    MyCustomCommand(parts[1..]);
-    return true;
+### Advanced Usage
+```bash
+# Run directly without installation
+./scripts/wurp-terminal run
+
+# Check AI service status
+./scripts/wurp-terminal ai-status
+
+# Development workflow
+dotnet run                          # Direct .NET execution
+dotnet build --watch               # Hot reload during development
+```
+
+## Project Structure
+
+```
+wurp-terminal/
+├── Program.cs                          # Application entry point
+├── Core/                               # Modular architecture
+│   ├── WurpTerminalService.cs          # Main terminal service
+│   ├── AIIntegration.cs               # FreelanceAI integration
+│   └── ThemeManager.cs                # Theme management
+├── wurp-config.json                   # Centralised configuration
+├── scripts/
+│   ├── wurp-terminal                   # Main launcher script
+│   └── lib/
+│       └── wurp-terminal-functions.sh # Function library
+├── WurpTerminal.csproj                # .NET project file
+└── README.md                          # This file
+```
+
+## Configuration
+
+The `wurp-config.json` file contains all settings:
+
+```json
+{
+  "services": {
+    "freelance_ai": {
+      "base_url": "http://localhost:5000",
+      "features": [
+        "Smart provider routing (Groq, Ollama)",
+        "Cost optimisation and tracking",
+        "Response history analytics",
+        "Health monitoring",
+        "Automatic failover"
+      ]
+    }
+  }
+}
 ```
 
 ## Troubleshooting
 
 ### Common Issues
-
-1. **Build Fails**
-   ```bash
-   # Ensure .NET 8 SDK is installed
-   dotnet --version
-   
-   # Clean and rebuild
-   dotnet clean
-   dotnet restore
-   dotnet build
-   ```
-
-2. **AI Commands Not Working**
-   - Check FreelanceAI service: `curl http://localhost:5000/health`
-   - Terminal will fall back to local help if API is unavailable
-
-3. **Theme Not Changing**
-   - Use exact theme names: `theme default`, `theme dark`, `theme wurp`
-   - Check available themes: `theme` (without arguments)
+1. **AI commands not working**: Ensure FreelanceAI is running on port 5000
+2. **Theme not changing**: Try using the full command: `theme <name>`
+3. **Build fails**: Check that .NET 9 SDK is properly installed
 
 ### Debug Commands
 ```bash
-# Within the terminal
-status                     # Check AI service connectivity
-version                    # Verify terminal version
-help                       # Show all available commands
+# Check FreelanceAI connectivity
+curl http://localhost:5000/health
+
+# Check dependencies
+./scripts/wurp-terminal check
+
+# View detailed status
+./scripts/wurp-terminal status
 ```
-
-## Contributing
-
-This is a standalone project extracted from the Wurp Terminal bootstrap. Feel free to:
-
-- Add new features
-- Improve AI integration
-- Create additional themes
-- Enhance command functionality
-- Add tests and documentation
-
-## License
-
-Built as part of the Warp Terminal Clone project using .NET 8 and FreelanceAI integration.
 
 ---
 
-**Built with ❤️ using .NET 8 and FreelanceAI**
+**Built with ❤️ using .NET 9 and FreelanceAI**
 
-*Experience the future of terminal interaction with AI-powered assistance and intelligent command routing.*
+*Experience the future of terminal interaction with AI-powered assistance and intelligent routing.*
