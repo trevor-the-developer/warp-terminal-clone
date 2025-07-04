@@ -12,8 +12,8 @@ class Program
         {
             var terminal = new WurpTerminalService();
 
-            Console.WriteLine("🚀 Wurp (Warp Terminal Clone) v1.0");
-            Console.WriteLine("AI-Powered Terminal built with .NET");
+            Console.WriteLine("🚀 Wurp (Warp Terminal Clone) v1.0.0");
+            Console.WriteLine("AI-Powered Terminal built with .NET 9");
             Console.WriteLine("═══════════════════════════════════════\n");
 
             if (args.Length > 0)

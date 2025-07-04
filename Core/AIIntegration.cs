@@ -44,116 +44,7 @@ public class AIIntegration
         }
     }
 
-    private async Task<string?> CallFreelanceAI(string subcommand, string prompt)
-    {
-        try
-        {
-            using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(30);
-
-            // Check FreelanceAI health first
-            var healthResponse = await client.GetAsync("http://localhost:5000/health");
-            if (!healthResponse.IsSuccessStatusCode)
-                return null;
-
-            // Create AI request based on subcommand
-            var aiPrompt = FormatPromptForSubcommand(subcommand, prompt);
-            var requestBody = new
-            {
-                prompt = aiPrompt,
-                maxTokens = 500,
-                temperature = 0.7m
-            };
-
-            var jsonContent = System.Text.Json.JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("http://localhost:5000/api/ai/generate", content);
-            if (response.IsSuccessStatusCode)
-            {
-                var responseText = await response.Content.ReadAsStringAsync();
-                var jsonResponse = System.Text.Json.JsonDocument.Parse(responseText);
-
-                if (jsonResponse.RootElement.TryGetProperty("success", out var success) && success.GetBoolean())
-                {
-                    if (jsonResponse.RootElement.TryGetProperty("content", out var contentProp))
-                    {
-                        var aiContent = contentProp.GetString();
-                        var provider = jsonResponse.RootElement.TryGetProperty("provider", out var providerProp)
-                            ? providerProp.GetString() : "Unknown";
-                        var cost = jsonResponse.RootElement.TryGetProperty("cost", out var costProp)
-                            ? costProp.GetDecimal() : 0m;
-
-                        Console.WriteLine($"📊 Provider: {provider} | Cost: ${cost:F4}");
-                        return aiContent;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"🚨 FreelanceAI Error: {ex.Message}");
-        }
-
-        return null;
-    }
-
-    private string FormatPromptForSubcommand(string subcommand, string prompt)
-    {
-        return subcommand.ToLower() switch
-        {
-            "explain" => $"Please explain the following command or concept in simple terms for a developer: {prompt}",
-            "suggest" => $"Suggest practical solutions or commands for this task: {prompt}",
-            "debug" => $"Help debug this issue and provide troubleshooting steps: {prompt}",
-            "code" => $"Generate clean, production-ready code for: {prompt}",
-            "review" => $"Review this code and suggest improvements: {prompt}",
-            "optimise" => $"Optimise this code or process: {prompt}",
-            "test" => $"Provide testing strategies and examples for: {prompt}",
-            _ => prompt
-        };
-    }
-
-    private async Task LocalAIFallback(string subcommand, string prompt)
-    {
-        await Task.Delay(500);
-
-        switch (subcommand)
-        {
-            case "explain":
-                Console.WriteLine($"📖 Command explanation for: {prompt}");
-                Console.WriteLine("This is a local fallback explanation.");
-                break;
-            case "suggest":
-                Console.WriteLine($"💡 Suggestions for: {prompt}");
-                Console.WriteLine("• Try using 'man' command for documentation");
-                Console.WriteLine("• Use '--help' flag for command options");
-                break;
-            case "debug":
-                Console.WriteLine($"🔍 Debug help for: {prompt}");
-                Console.WriteLine("• Check error logs");
-                Console.WriteLine("• Verify command syntax");
-                Console.WriteLine("• Check file permissions");
-                break;
-            case "code":
-                Console.WriteLine($"💻 Code generation for: {prompt}");
-                Console.WriteLine("• Local fallback - basic code templates available");
-                break;
-            case "review":
-                Console.WriteLine($"🔍 Code review for: {prompt}");
-                Console.WriteLine("• Local fallback - basic syntax checking");
-                break;
-            case "optimise":
-                Console.WriteLine($"⚡ Optimisation suggestions for: {prompt}");
-                Console.WriteLine("• Local fallback - general performance tips");
-                break;
-            case "test":
-                Console.WriteLine($"🧪 Testing guidance for: {prompt}");
-                Console.WriteLine("• Local fallback - basic testing strategies");
-                break;
-        }
-    }
-
-    public async Task<bool> CheckFreelanceAIHealthAsync()
+    public static async Task<bool> CheckFreelanceAIHealthAsync()
     {
         try
         {
@@ -169,7 +60,7 @@ public class AIIntegration
         }
     }
 
-    public async Task ShowFreelanceAIStatusAsync()
+    public static async Task ShowFreelanceAIStatusAsync()
     {
         try
         {
@@ -222,4 +113,113 @@ public class AIIntegration
             Console.WriteLine($"🚨 Error checking FreelanceAI status: {ex.Message}");
         }
     }
+
+    private static async Task LocalAIFallback(string subcommand, string prompt)
+    {
+        await Task.Delay(500);
+
+        switch (subcommand)
+        {
+            case "explain":
+                Console.WriteLine($"📖 Command explanation for: {prompt}");
+                Console.WriteLine("This is a local fallback explanation.");
+                break;
+            case "suggest":
+                Console.WriteLine($"💡 Suggestions for: {prompt}");
+                Console.WriteLine("• Try using 'man' command for documentation");
+                Console.WriteLine("• Use '--help' flag for command options");
+                break;
+            case "debug":
+                Console.WriteLine($"🔍 Debug help for: {prompt}");
+                Console.WriteLine("• Check error logs");
+                Console.WriteLine("• Verify command syntax");
+                Console.WriteLine("• Check file permissions");
+                break;
+            case "code":
+                Console.WriteLine($"💻 Code generation for: {prompt}");
+                Console.WriteLine("• Local fallback - basic code templates available");
+                break;
+            case "review":
+                Console.WriteLine($"🔍 Code review for: {prompt}");
+                Console.WriteLine("• Local fallback - basic syntax checking");
+                break;
+            case "optimise":
+                Console.WriteLine($"⚡ Optimisation suggestions for: {prompt}");
+                Console.WriteLine("• Local fallback - general performance tips");
+                break;
+            case "test":
+                Console.WriteLine($"🧪 Testing guidance for: {prompt}");
+                Console.WriteLine("• Local fallback - basic testing strategies");
+                break;
+        }
+    }
+
+    private static string FormatPromptForSubcommand(string subcommand, string prompt)
+    {
+        return subcommand.ToLower() switch
+        {
+            "explain" => $"Please explain the following command or concept in simple terms for a developer: {prompt}",
+            "suggest" => $"Suggest practical solutions or commands for this task: {prompt}",
+            "debug" => $"Help debug this issue and provide troubleshooting steps: {prompt}",
+            "code" => $"Generate clean, production-ready code for: {prompt}",
+            "review" => $"Review this code and suggest improvements: {prompt}",
+            "optimise" => $"Optimise this code or process: {prompt}",
+            "test" => $"Provide testing strategies and examples for: {prompt}",
+            _ => prompt
+        };
+    }
+    
+    private async Task<string?> CallFreelanceAI(string subcommand, string prompt)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(30);
+
+            // Check FreelanceAI health first
+            var healthResponse = await client.GetAsync("http://localhost:5000/health");
+            if (!healthResponse.IsSuccessStatusCode)
+                return null;
+
+            // Create AI request based on subcommand
+            var aiPrompt = FormatPromptForSubcommand(subcommand, prompt);
+            var requestBody = new
+            {
+                prompt = aiPrompt,
+                maxTokens = 500,
+                temperature = 0.7m
+            };
+
+            var jsonContent = System.Text.Json.JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("http://localhost:5000/api/ai/generate", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseText = await response.Content.ReadAsStringAsync();
+                var jsonResponse = System.Text.Json.JsonDocument.Parse(responseText);
+
+                if (jsonResponse.RootElement.TryGetProperty("success", out var success) && success.GetBoolean())
+                {
+                    if (jsonResponse.RootElement.TryGetProperty("content", out var contentProp))
+                    {
+                        var aiContent = contentProp.GetString();
+                        var provider = jsonResponse.RootElement.TryGetProperty("provider", out var providerProp)
+                            ? providerProp.GetString() : "Unknown";
+                        var cost = jsonResponse.RootElement.TryGetProperty("cost", out var costProp)
+                            ? costProp.GetDecimal() : 0m;
+
+                        Console.WriteLine($"📊 Provider: {provider} | Cost: ${cost:F4}");
+                        return aiContent;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"🚨 FreelanceAI Error: {ex.Message}");
+        }
+
+        return null;
+    }    
 }
